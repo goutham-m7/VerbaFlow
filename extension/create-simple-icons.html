@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate LinguaLive Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            margin: 5px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        .instructions {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LinguaLive Extension Icon Generator</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Click "Generate Icons" to create all required icon files</li>
+                <li>Right-click on each canvas and select "Save image as..."</li>
+                <li>Save with the exact filename shown (e.g., icon16.png)</li>
+                <li>Place all saved files in the <code>icons/</code> folder</li>
+            </ol>
+        </div>
+
+        <button onclick="generateAllIcons()">Generate All Icons</button>
+        <button onclick="downloadAllIcons()">Download All Icons (if supported)</button>
+
+        <div id="iconContainer"></div>
+    </div>
+
+    <script>
+        const sizes = [16, 32, 48, 128];
+        const icons = {};
+
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            canvas.id = `icon${size}`;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw globe emoji (scaled appropriately)
+            ctx.fillStyle = 'white';
+            ctx.font = `${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🌍', size / 2, size / 2);
+            
+            // Add border for visibility
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, size, size);
+            
+            return canvas;
+        }
+
+        function generateDisabledIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            canvas.id = `icon${size}-disabled`;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Gray background
+            ctx.fillStyle = '#666';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Semi-transparent overlay
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = '#999';
+            ctx.fillRect(0, 0, size, size);
+            ctx.globalAlpha = 1;
+            
+            // Draw globe emoji in gray
+            ctx.fillStyle = '#999';
+            ctx.font = `${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🌍', size / 2, size / 2);
+            
+            // Add border for visibility
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, size, size);
+            
+            return canvas;
+        }
+
+        function generateAllIcons() {
+            const container = document.getElementById('iconContainer');
+            container.innerHTML = '';
+            
+            sizes.forEach(size => {
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'icon-preview';
+                
+                const icon = generateIcon(size);
+                const disabledIcon = generateDisabledIcon(size);
+                
+                iconDiv.innerHTML = `
+                    <h4>${size}x${size}</h4>
+                    <p>icon${size}.png</p>
+                    <canvas id="icon${size}" width="${size}" height="${size}"></canvas>
+                    <br>
+                    <p>icon${size}-disabled.png</p>
+                    <canvas id="icon${size}-disabled" width="${size}" height="${size}"></canvas>
+                `;
+                
+                container.appendChild(iconDiv);
+                
+                // Draw the icons
+                const ctx1 = icon.getContext('2d');
+                const ctx2 = disabledIcon.getContext('2d');
+                
+                // Copy the generated content
+                const tempCanvas1 = generateIcon(size);
+                const tempCanvas2 = generateDisabledIcon(size);
+                
+                ctx1.drawImage(tempCanvas1, 0, 0);
+                ctx2.drawImage(tempCanvas2, 0, 0);
+                
+                icons[`icon${size}.png`] = tempCanvas1;
+                icons[`icon${size}-disabled.png`] = tempCanvas2;
+            });
+        }
+
+        function downloadAllIcons() {
+            sizes.forEach(size => {
+                // Download regular icon
+                const link1 = document.createElement('a');
+                link1.download = `icon${size}.png`;
+                link1.href = icons[`icon${size}.png`].toDataURL();
+                link1.click();
+                
+                // Download disabled icon
+                const link2 = document.createElement('a');
+                link2.download = `icon${size}-disabled.png`;
+                link2.href = icons[`icon${size}-disabled.png`].toDataURL();
+                link2.click();
+            });
+        }
+
+        // Generate icons on page load
+        window.onload = generateAllIcons;
+    </script>
+</body>
+</html> 

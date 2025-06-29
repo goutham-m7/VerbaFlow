@@ -1,0 +1,34 @@
+{
+  "name": "lingualive-extension",
+  "version": "1.0.0",
+  "description": "Real-time speech translation browser extension for video calls",
+  "main": "background.js",
+  "scripts": {
+    "build": "node create-icons.js",
+    "dev": "echo 'Load extension in Chrome developer mode'",
+    "test": "echo 'Test extension functionality'",
+    "package": "zip -r lingualive-extension.zip . -x '*.git*' 'node_modules/*' '*.DS_Store'"
+  },
+  "keywords": [
+    "translation",
+    "speech-recognition",
+    "video-calls",
+    "browser-extension",
+    "real-time",
+    "subtitles"
+  ],
+  "author": "LinguaLive Team",
+  "license": "MIT",
+  "devDependencies": {
+    "canvas": "^2.11.2"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/VerbaFlow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-repo/VerbaFlow/issues"
+  },
+  "homepage": "https://github.com/your-repo/VerbaFlow#readme"
+} 
