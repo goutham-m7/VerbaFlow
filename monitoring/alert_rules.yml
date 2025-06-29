@@ -1,0 +1,132 @@
+groups:
+  - name: lingualive-alerts
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 5 minutes"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for more than 5 minutes"
+
+      # Backend API Down
+      - alert: BackendAPIDown
+        expr: up{job="lingualive-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend API is down"
+          description: "The LinguaLive backend API has been down for more than 1 minute"
+
+      # Backend High Response Time
+      - alert: BackendHighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend API high response time"
+          description: "95th percentile response time is above 2 seconds"
+
+      # Backend High Error Rate
+      - alert: BackendHighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend API high error rate"
+          description: "Error rate is above 5% for more than 5 minutes"
+
+      # MongoDB Connection Issues
+      - alert: MongoDBConnectionIssues
+        expr: mongodb_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MongoDB connection issues"
+          description: "Cannot connect to MongoDB database"
+
+      # Redis Connection Issues
+      - alert: RedisConnectionIssues
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection issues"
+          description: "Cannot connect to Redis cache"
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 10%"
+
+      # Translation Service Errors
+      - alert: TranslationServiceErrors
+        expr: rate(translation_requests_total{status="error"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Translation service errors"
+          description: "Translation service is returning errors"
+
+      # WebSocket Connection Issues
+      - alert: WebSocketConnectionIssues
+        expr: websocket_connections_total < 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "WebSocket connection issues"
+          description: "No active WebSocket connections"
+
+      # High Translation Latency
+      - alert: HighTranslationLatency
+        expr: histogram_quantile(0.95, rate(translation_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High translation latency"
+          description: "95th percentile translation time is above 5 seconds"
+
+      # Certificate Expiry
+      - alert: CertificateExpiry
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate will expire in less than 30 days"
+
+      # Container Restarts
+      - alert: ContainerRestarts
+        expr: increase(container_restarts_total[15m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High container restart rate"
+          description: "Container has restarted more than 5 times in 15 minutes" 

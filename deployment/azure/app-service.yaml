@@ -1,0 +1,45 @@
+apiVersion: 2021-02-01
+location: East US
+name: lingualive-backend
+properties:
+  kind: app
+  reserved: true
+  sku:
+    name: P1v3
+    tier: PremiumV3
+  siteConfig:
+    linuxFxVersion: DOCKER|ghcr.io/your-username/verbaflow-backend:latest
+    alwaysOn: true
+    appSettings:
+      - name: MONGODB_URI
+        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/mongodb-uri/)"
+      - name: REDIS_URL
+        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/redis-url/)"
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: "/home/site/wwwroot/credentials/google-credentials.json"
+      - name: SENTRY_DSN
+        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/sentry-dsn/)"
+      - name: SENTRY_ENVIRONMENT
+        value: "production"
+      - name: WEBSITES_PORT
+        value: "8000"
+      - name: DOCKER_REGISTRY_SERVER_URL
+        value: "ghcr.io"
+      - name: DOCKER_REGISTRY_SERVER_USERNAME
+        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/docker-username/)"
+      - name: DOCKER_REGISTRY_SERVER_PASSWORD
+        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/docker-password/)"
+    healthCheckPath: /health
+    cors:
+      allowedOrigins:
+        - "https://lingualive.vercel.app"
+        - "https://lingualive-staging.vercel.app"
+        - "chrome-extension://*"
+    applicationStack:
+      docker:
+        registryUrl: ghcr.io
+        imageName: your-username/verbaflow-backend:latest
+  httpsOnly: true
+  clientAffinityEnabled: false
+  redundancyMode: Active
+  zoneRedundant: true 
