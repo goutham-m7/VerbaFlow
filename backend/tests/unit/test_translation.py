@@ -1,6 +1,27 @@
 import pytest
+import sys
+import os
+from pathlib import Path
 from unittest.mock import Mock, patch
-from app.services.translation import TranslationService
+
+# Ensure the backend directory is in the Python path
+backend_dir = Path(__file__).parent.parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
+try:
+    from app.services.translation import TranslationService
+except ImportError as e:
+    # Fallback: try to import with absolute path
+    try:
+        import app.services.translation
+        from app.services.translation import TranslationService
+    except ImportError:
+        print(f"Failed to import TranslationService: {e}")
+        print(f"Python path: {sys.path}")
+        print(f"Current directory: {os.getcwd()}")
+        print(f"Backend directory: {backend_dir}")
+        raise
 
 
 class TestTranslationService:

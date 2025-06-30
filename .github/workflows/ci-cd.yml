@@ -42,7 +42,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-asyncio pytest-cov
+        pip install pytest pytest-asyncio pytest-cov pytest-mock
     
     - name: Run linting
       run: |
@@ -53,11 +53,11 @@ jobs:
     
     - name: Run tests with coverage
       run: |
-        pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing
+        python run_tests.py
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         REDIS_URL: ${{ secrets.REDIS_URL }}
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -203,7 +203,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
     
-    - name: Deploy to Vercel (Production)
+    - name: Deploy to Vercel (Frontend)
       uses: amondnet/vercel-action@v25
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -212,15 +212,16 @@ jobs:
         working-directory: ./frontend
         vercel-args: '--prod'
     
-    - name: Deploy Extension to Chrome Web Store
-      if: github.event_name == 'release'
-      uses: trmcnvn/chrome-addon@v2
-      with:
-        extension: ${{ secrets.EXTENSION_ID }}
-        zip: ./extension/lingualive-extension.zip
-        client-id: ${{ secrets.CHROME_CLIENT_ID }}
-        client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
-        refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+    - name: Run health checks
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 60
+        
+        echo "Checking backend health..."
+        curl -f https://lingualive-production.azurewebsites.net/health || exit 1
+        
+        echo "Checking frontend..."
+        curl -f https://lingualive.vercel.app || exit 1
 
   # Security Scanning
   security-scan:

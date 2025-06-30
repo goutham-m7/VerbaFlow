@@ -5,40 +5,46 @@ properties:
   kind: app
   reserved: true
   sku:
-    name: P1v3
-    tier: PremiumV3
+    name: P1v2
+    tier: PremiumV2
   siteConfig:
-    linuxFxVersion: DOCKER|ghcr.io/your-username/verbaflow-backend:latest
+    linuxFxVersion: PYTHON|3.11
     alwaysOn: true
     appSettings:
-      - name: MONGODB_URI
-        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/mongodb-uri/)"
-      - name: REDIS_URL
-        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/redis-url/)"
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: "/home/site/wwwroot/credentials/google-credentials.json"
-      - name: SENTRY_DSN
-        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/sentry-dsn/)"
-      - name: SENTRY_ENVIRONMENT
-        value: "production"
+      - name: DEBUG
+        value: "false"
+      - name: HOST
+        value: "0.0.0.0"
+      - name: PORT
+        value: "8000"
       - name: WEBSITES_PORT
         value: "8000"
-      - name: DOCKER_REGISTRY_SERVER_URL
-        value: "ghcr.io"
-      - name: DOCKER_REGISTRY_SERVER_USERNAME
-        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/docker-username/)"
-      - name: DOCKER_REGISTRY_SERVER_PASSWORD
-        value: "@Microsoft.KeyVault(SecretUri=https://lingualive-kv.vault.azure.net/secrets/docker-password/)"
+      - name: WEBSITES_ENABLE_APP_SERVICE_STORAGE
+        value: "true"
+      - name: MONGODB_URI
+        value: "[Your MongoDB connection string]"
+      - name: REDIS_URL
+        value: "[Your Redis connection string]"
+      - name: GOOGLE_APPLICATION_CREDENTIALS_JSON
+        value: "[Your Google Cloud credentials JSON]"
+      - name: SENTRY_DSN
+        value: "[Your Sentry DSN]"
+      - name: SENTRY_ENVIRONMENT
+        value: "production"
+      - name: HMS_APP_GROUP_ID
+        value: "[Your 100ms App Group ID]"
+      - name: HMS_APP_ID
+        value: "[Your 100ms App ID]"
+      - name: HMS_APP_SECRET
+        value: "[Your 100ms App Secret]"
     healthCheckPath: /health
     cors:
       allowedOrigins:
-        - "https://lingualive.vercel.app"
-        - "https://lingualive-staging.vercel.app"
-        - "chrome-extension://*"
+        - "https://lingualive-frontend.azurestaticapps.net"
+        - "http://localhost:3000"
     applicationStack:
-      docker:
-        registryUrl: ghcr.io
-        imageName: your-username/verbaflow-backend:latest
+      python:
+        pythonVersion: "3.11"
   httpsOnly: true
   clientAffinityEnabled: false
   redundancyMode: Active
