@@ -45,11 +45,11 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        startup-command: 'uvicorn app.main:app --host 0.0.0.0 --port 8000'
+        startup-command: 'pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000'
     
     - name: Health check
       run: |
         echo "Waiting for deployment to complete..."
-        sleep 30
+        sleep 60
         curl -f https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health || exit 1
         echo "Health check passed!" 
