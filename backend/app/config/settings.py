@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     ]
     allowed_hosts: List[str] = ["*"]
     
+    
     # Database settings
     mongodb_uri: str = "mongodb://localhost:27017/verbaflow"
     mongodb_database: str = "verbaflow"
