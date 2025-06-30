@@ -139,14 +139,14 @@ async def debug_mongodb():
     """Debug endpoint to test MongoDB connectivity"""
     try:
         from app.services.database import get_database
+        from app.utils.mongo_serializer import serialize_mongo_response
         db = get_database()
         
-        # Test basic operations
-        collections = await db.list_collection_names()
-        
-        # Test each collection
+        # Test collections
+        collections = ["users", "meetings", "transcripts"]
         results = {}
-        for collection_name in ['users', 'meetings', 'transcripts']:
+        
+        for collection_name in collections:
             try:
                 collection = db[collection_name]
                 count = await collection.count_documents({})
@@ -161,9 +161,10 @@ async def debug_mongodb():
                     await collection.insert_one(sample_doc)
                     results[collection_name] = {"status": "created_sample", "count": 1}
                 else:
-                    # Get sample document
+                    # Get sample document and serialize it properly
                     sample = await collection.find_one({})
-                    results[collection_name] = {"status": "connected", "count": count, "sample": sample}
+                    serialized_sample = serialize_mongo_response(sample) if sample else None
+                    results[collection_name] = {"status": "connected", "count": count, "sample": serialized_sample}
                     
             except Exception as e:
                 results[collection_name] = {"status": "error", "error": str(e)}
