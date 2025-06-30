@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017/verbaflow"
     mongodb_database: str = "verbaflow"
     
+    # MongoDB Atlas specific settings for Azure Web Apps
+    mongodb_use_atlas: bool = False
+    mongodb_atlas_cluster: str = ""
+    mongodb_atlas_username: str = ""
+    mongodb_atlas_password: str = ""
+    mongodb_atlas_database: str = "verbaflow"
+    
     # Redis settings
     redis_url: str = "redis://localhost:6379"
     redis_db: int = 0

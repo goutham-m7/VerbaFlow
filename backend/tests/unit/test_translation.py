@@ -2,7 +2,6 @@ import pytest
 import sys
 import os
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 # Ensure the backend directory is in the Python path
 backend_dir = Path(__file__).parent.parent

@@ -48,7 +48,7 @@ class TTSService:
                 self.client = texttospeech.TextToSpeechClient()
                 logger.info("Google Cloud Text-to-Speech client initialized")
             else:
-                logger.warning("Google Cloud project ID not configured, using browser TTS")
+                logger.warning("Google Cloud project ID not configured.")
                 self.client = None
                 
         except Exception as e:
@@ -83,15 +83,8 @@ class TTSService:
             }
         
         # If Google Cloud client is not available or browser TTS requested, return browser TTS info
-        if not self.client or provider == "browser":
-            return {
-                "success": True,
-                "provider": "browser",
-                "text": text,
-                "language_code": language_code,
-                "voice_name": voice_name,
-                "audio_data": None  # Browser TTS doesn't return audio data
-            }
+        if not self.client or provider != "google":
+            raise RuntimeError("Google Cloud Text-to-Speech client is not initialized.")
         
         try:
             # Set up the text input
@@ -152,15 +145,7 @@ class TTSService:
                     for voice in response.voices
                 ]
             else:
-                # Return mock voices for browser TTS
-                return [
-                    {
-                        "name": "browser-default",
-                        "language_code": language_code,
-                        "ssml_gender": "NEUTRAL",
-                        "natural_sample_rate_hertz": 22050
-                    }
-                ]
+                return []
         except Exception as e:
             logger.error(f"Error getting available voices: {e}")
             return []

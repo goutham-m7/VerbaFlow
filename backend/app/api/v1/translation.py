@@ -91,21 +91,9 @@ async def detect_language(request: LanguageDetectionRequest):
     result = translation_service.detect_language(request.text)
     return LanguageDetectionResponse(**result)
 
-@router.get("/languages", response_model=List[LanguageInfo])
-async def get_languages():
-    """Mock languages endpoint for testing"""
-    return [
-        LanguageInfo(code="en", name="English", native_name="English"),
-        LanguageInfo(code="es", name="Spanish", native_name="Español"),
-        LanguageInfo(code="fr", name="French", native_name="Français"),
-        LanguageInfo(code="de", name="German", native_name="Deutsch"),
-        LanguageInfo(code="it", name="Italian", native_name="Italiano"),
-        LanguageInfo(code="pt", name="Portuguese", native_name="Português"),
-        LanguageInfo(code="ru", name="Russian", native_name="Русский"),
-        LanguageInfo(code="ja", name="Japanese", native_name="日本語"),
-        LanguageInfo(code="ko", name="Korean", native_name="한국어"),
-        LanguageInfo(code="zh", name="Chinese", native_name="中文")
-    ]
+@router.get("/languages")
+def get_languages():
+    raise NotImplementedError("Languages endpoint must be implemented with real data.")
 
 @router.post("/tts", response_model=TTSResponse)
 async def text_to_speech(request: TTSRequest):

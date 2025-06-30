@@ -141,34 +141,40 @@ async def debug_mongodb():
         from app.services.database import get_database
         from app.utils.mongo_serializer import serialize_mongo_response
         db = get_database()
-        
+        if db is None:
+            return {"status": "error", "error": "Database connection failed (db is None)"}
         # Test collections
         collections = ["users", "meetings", "transcripts"]
         results = {}
-        
+        dummy_data = {
+            "users": [
+                {"email": "alice@example.com", "name": "Alice", "is_active": True},
+                {"email": "bob@example.com", "name": "Bob", "is_active": True},
+                {"email": "carol@example.com", "name": "Carol", "is_active": False}
+            ],
+            "meetings": [
+                {"meeting_id": "meet-001", "title": "Project Kickoff", "status": "scheduled"},
+                {"meeting_id": "meet-002", "title": "Sprint Review", "status": "completed"}
+            ],
+            "transcripts": [
+                {"meeting_id": "meet-001", "speaker_name": "Alice", "original_text": "Welcome to the project!", "is_final": True},
+                {"meeting_id": "meet-002", "speaker_name": "Bob", "original_text": "Sprint went well.", "is_final": True}
+            ]
+        }
         for collection_name in collections:
             try:
                 collection = db[collection_name]
                 count = await collection.count_documents({})
-                
                 if count == 0:
-                    # Create sample document
-                    sample_doc = {
-                        "test": True,
-                        "timestamp": "2024-01-01T00:00:00Z",
-                        "message": f"Sample document for {collection_name}"
-                    }
-                    await collection.insert_one(sample_doc)
-                    results[collection_name] = {"status": "created_sample", "count": 1}
-                else:
-                    # Get sample document and serialize it properly
-                    sample = await collection.find_one({})
-                    serialized_sample = serialize_mongo_response(sample) if sample else None
-                    results[collection_name] = {"status": "connected", "count": count, "sample": serialized_sample}
-                    
+                    # Insert dummy documents
+                    await collection.insert_many(dummy_data[collection_name])
+                    count = await collection.count_documents({})
+                # Get up to 3 sample documents and serialize
+                cursor = collection.find({}).limit(3)
+                docs = [serialize_mongo_response(doc) async for doc in cursor]
+                results[collection_name] = {"status": "connected", "count": count, "samples": docs}
             except Exception as e:
                 results[collection_name] = {"status": "error", "error": str(e)}
-        
         return {
             "status": "connected",
             "collections": collections,

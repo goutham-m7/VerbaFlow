@@ -1,27 +1,13 @@
 import redis.asyncio as redis
 from app.config.settings import settings
 
-# Mock Redis client for testing
-class MockRedis:
-    async def ping(self):
-        return True
-    
-    async def get(self, key: str):
-        return None
-    
-    async def set(self, key: str, value: str, ex: int = None):
-        return True
-    
-    async def delete(self, key: str):
-        return 1
-
-# Global Redis client
 redis_client = None
 
 def get_redis_client():
     """Get Redis client"""
     global redis_client
-    redis_client = redis.from_url(settings.redis_url)
+    if not redis_client:
+        redis_client = redis.from_url(settings.redis_url, db=settings.redis_db)
     return redis_client
 
 async def connect_redis():
