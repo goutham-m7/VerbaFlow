@@ -1,7 +1,10 @@
 import os
 import re
+import json
+import tempfile
 from typing import Optional, Dict, Any, List
 from google.cloud import translate
+from google.oauth2 import service_account
 from app.config.settings import settings
 import logging
 
@@ -10,14 +13,38 @@ logger = logging.getLogger(__name__)
 class TranslationService:
     def __init__(self):
         self.client = None
+        self.project_id = None
         self._initialize_client()
     
     def _initialize_client(self):
         """Initialize Google Cloud Translate client"""
         try:
-            # Check if credentials are provided via environment variable
+            # Handle Google Cloud credentials
             if settings.google_application_credentials:
-                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = settings.google_application_credentials
+                # Check if it's a JSON string or file path
+                if settings.google_application_credentials.strip().startswith('{'):
+                    # It's a JSON string - create a temporary file
+                    try:
+                        # Parse the JSON to validate it
+                        creds_json = json.loads(settings.google_application_credentials)
+                        
+                        # Create a temporary file with the credentials
+                        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+                            json.dump(creds_json, temp_file)
+                            temp_file_path = temp_file.name
+                        
+                        # Set the environment variable to point to the temporary file
+                        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_file_path
+                        logger.info(f"Created temporary credentials file: {temp_file_path}")
+                        
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS: {e}")
+                        self.client = None
+                        return
+                else:
+                    # It's a file path - use it directly
+                    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = settings.google_application_credentials
+                    logger.info(f"Using credentials file: {settings.google_application_credentials}")
             
             # Check if project ID is set
             if settings.google_cloud_project and settings.google_cloud_project != "your-google-project-id":
