@@ -277,7 +277,7 @@ const LinguaLivePage: React.FC = () => {
   // Welcome banner
   const WelcomeBanner = () => (
     <Box textAlign="center" mb={4}>
-      <Text fontSize="2xl" fontWeight="bold" color="brand.600">
+      <Text fontSize="2xl" fontWeight="bold" color="blue.600">
         Speak. We'll detect your language and translate instantly.
       </Text>
       <Text fontSize="md" color={textColor} mt={2}>
@@ -299,6 +299,81 @@ const LinguaLivePage: React.FC = () => {
         Translation Settings
       </Text>
       <VStack spacing={3} align="stretch">
+        {/* Language Detection Mode */}
+        <Box>
+          <Text fontSize="sm" color={textColor} mb={1}>
+            Language Detection:
+          </Text>
+          <Select
+            value={languagePreferences.sourceLanguage === 'auto' ? 'auto' : 'manual'}
+            onChange={(e) => {
+              const mode = e.target.value;
+              setLanguagePreferences(prev => ({
+                ...prev,
+                sourceLanguage: mode === 'auto' ? 'auto' : 'en' // Default to English for manual mode
+              }));
+            }}
+            size="md"
+            bg={bgColor}
+            borderColor={borderColor}
+            mb={2}
+            color={textColor}
+            _hover={{ borderColor: 'blue.400' }}
+            _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
+          >
+            <option value="auto" style={{ color: textColor, backgroundColor: bgColor }}>Auto Detection</option>
+            <option value="manual" style={{ color: textColor, backgroundColor: bgColor }}>Manual Selection</option>
+          </Select>
+          
+          {/* Manual Language Selection */}
+          {languagePreferences.sourceLanguage !== 'auto' && (
+            <Box>
+              <Text fontSize="sm" color={textColor} mb={1}>
+                I'm speaking in:
+              </Text>
+              <Select
+                value={languagePreferences.sourceLanguage}
+                onChange={(e) => setLanguagePreferences(prev => ({
+                  ...prev,
+                  sourceLanguage: e.target.value
+                }))}
+                size="md"
+                bg={bgColor}
+                borderColor={borderColor}
+                color={textColor}
+                _hover={{ borderColor: 'blue.400' }}
+                _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="zh">Chinese</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="nl">Dutch</option>
+                <option value="sv">Swedish</option>
+                <option value="no">Norwegian</option>
+                <option value="da">Danish</option>
+                <option value="fi">Finnish</option>
+                <option value="pl">Polish</option>
+                <option value="tr">Turkish</option>
+                <option value="he">Hebrew</option>
+                <option value="th">Thai</option>
+                <option value="vi">Vietnamese</option>
+                <option value="id">Indonesian</option>
+                <option value="ms">Malay</option>
+                <option value="fa">Persian</option>
+              </Select>
+            </Box>
+          )}
+        </Box>
+
         <Box>
           <Text fontSize="sm" color={textColor} mb={1}>
             Translate to:
@@ -312,6 +387,9 @@ const LinguaLivePage: React.FC = () => {
             size="md"
             bg={bgColor}
             borderColor={borderColor}
+            color={textColor}
+            _hover={{ borderColor: 'blue.400' }}
+            _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
           >
             <option value="en">English</option>
             <option value="es">Spanish</option>
@@ -355,98 +433,198 @@ const LinguaLivePage: React.FC = () => {
     </Box>
   );
 
+  // Current Speaking Text Component
+  const CurrentSpeakingText = () => (
+    <Box
+      bg={transcriptBgColor}
+      p={4}
+      borderRadius="lg"
+      border="1px solid"
+      borderColor={borderColor}
+      minH="120px"
+      display="flex"
+      flexDirection="column"
+    >
+      <Text fontSize="md" fontWeight="semibold" color={textColor} mb={2}>
+        What I'm Saying
+      </Text>
+      <Box flex="1" display="flex" alignItems="center" justifyContent="center">
+        {transcription ? (
+          <Text fontSize="lg" color="blue.600" fontWeight="medium" textAlign="center">
+            "{transcription}"
+          </Text>
+        ) : (
+          <Text fontSize="md" color="gray.500" textAlign="center">
+            Start speaking to see your text here...
+          </Text>
+        )}
+      </Box>
+      {languagePreferences.sourceLanguage === 'auto' && detectedLanguage && (
+        <Text fontSize="xs" color="gray.500" mt={2} textAlign="center">
+          Detected: {getLanguageName(detectedLanguage)} 
+          {detectionConfidence && ` (${Math.round(detectionConfidence * 100)}% confidence)`}
+        </Text>
+      )}
+    </Box>
+  );
+
+  // Translation Display Component
+  const TranslationDisplay = () => (
+    <Box
+      bg={translationBgColor}
+      p={4}
+      borderRadius="lg"
+      border="1px solid"
+      borderColor={borderColor}
+      minH="120px"
+      display="flex"
+      flexDirection="column"
+    >
+      <Text fontSize="md" fontWeight="semibold" color={textColor} mb={2}>
+        Translation
+      </Text>
+      <Box flex="1" display="flex" alignItems="center" justifyContent="center">
+        {translation && detectedLanguage && detectedLanguage === languagePreferences.targetLanguage ? (
+          <VStack spacing={2}>
+            <Text fontSize="6xl">✅</Text>
+            <Text fontSize="md" color="green.600" fontWeight="medium" textAlign="center">
+              No translation needed
+            </Text>
+            <Text fontSize="sm" color="textColor" textAlign="center">
+              Already in {getLanguageName(languagePreferences.targetLanguage)}
+            </Text>
+          </VStack>
+        ) : translation ? (
+          <VStack spacing={2}>
+            <Text fontSize="lg" fontWeight="bold" color="blue.600" textAlign="center">
+              {translation}
+            </Text>
+            {enablePunctuation && (
+              <Text fontSize="xs" color="gray.500">
+                ✨ Punctuation added
+              </Text>
+            )}
+            <Button
+              size="sm"
+              colorScheme="blue"
+              leftIcon={<span>🔊</span>}
+              onClick={() => handleSpeakTranslation(translation)}
+            >
+              Listen
+            </Button>
+          </VStack>
+        ) : (
+          <Text fontSize="md" color="gray.500" textAlign="center">
+            Translation will appear here...
+          </Text>
+        )}
+      </Box>
+    </Box>
+  );
+
   if (!isSupported) {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isSecure = window.isSecureContext || window.location.protocol === 'https:';
+    
     return (
       <Container maxW="container.md" py={8}>
         <Box textAlign="center" py={12}>
-          <Text fontSize="xl" color="red.500" mb={4}>
-            Microphone access is not supported in your browser
-          </Text>
-          <Text color="gray.600">
-            Please use a modern browser that supports Web Audio API
-          </Text>
+          <VStack spacing={6}>
+            <Box>
+              <Text fontSize="xl" color="red.500" mb={4}>
+                Microphone access is not supported in your browser
+              </Text>
+              <Text color="gray.600" mb={4}>
+                Please use a modern browser that supports Web Audio API
+              </Text>
+            </Box>
+            
+            {isMobile && (
+              <VStack spacing={4} bg="blue.50" p={6} borderRadius="lg" border="1px solid" borderColor="blue.200">
+                <Text fontSize="lg" fontWeight="semibold" color="blue.800">
+                  📱 Mobile Device Detected
+                </Text>
+                <VStack spacing={2} align="start">
+                  {!isSecure && (
+                    <Text fontSize="sm" color="blue.700">
+                      🔒 <strong>HTTPS Required:</strong> Microphone access requires a secure connection on mobile devices.
+                    </Text>
+                  )}
+                  <Text fontSize="sm" color="blue.700">
+                    📱 <strong>Recommended Browsers:</strong> Chrome, Safari, or Firefox
+                  </Text>
+                  <Text fontSize="sm" color="blue.700">
+                    🎤 <strong>Permissions:</strong> Make sure to allow microphone access when prompted
+                  </Text>
+                  <Text fontSize="sm" color="blue.700">
+                    🔄 <strong>Try:</strong> Refresh the page or restart your browser
+                  </Text>
+                </VStack>
+              </VStack>
+            )}
+            
+            <VStack spacing={2}>
+              <Text fontSize="md" fontWeight="semibold" color="gray.700">
+                Supported Browsers:
+              </Text>
+              <HStack spacing={4} wrap="wrap" justify="center">
+                <Text fontSize="sm" color="gray.600">Chrome 66+</Text>
+                <Text fontSize="sm" color="gray.600">Firefox 60+</Text>
+                <Text fontSize="sm" color="gray.600">Safari 14+</Text>
+                <Text fontSize="sm" color="gray.600">Edge 79+</Text>
+              </HStack>
+            </VStack>
+          </VStack>
         </Box>
       </Container>
     );
   }
 
   return (
-    <Container maxW="container.sm" py={6}>
+    <Container maxW="container.lg" py={6}>
       <WelcomeBanner />
       <VStack spacing={6} align="stretch">
-        {/* Central Start/Stop Button & Live Feedback */}
-        <VStack spacing={2} align="center">
-          <CentralRecordButton />
-          <AudioVisualizer level={audioLevel} isActive={isTranscribing} />
-          {isTranscribing && (
-            <Text color="green.500" fontWeight="medium">Listening…</Text>
-          )}
-          {!isTranscribing && audioLevel > 0 && (
-            <Text color="orange.500" fontWeight="medium" fontSize="sm">
-              Microphone still active - click Stop again
-            </Text>
-          )}
-          <DetectedLanguageBadge />
-        </VStack>
+        {/* Top Row: Microphone Button (Left) and Settings (Right) */}
+        <HStack spacing={6} align="flex-start" justify="space-between">
+          {/* Left Side: Microphone Button */}
+          <VStack spacing={3} align="center" flex="1">
+            <CentralRecordButton />
+            <AudioVisualizer level={audioLevel} isActive={isTranscribing} />
+            {isTranscribing && (
+              <Text color="green.500" fontWeight="medium" fontSize="sm">Listening…</Text>
+            )}
+            {!isTranscribing && audioLevel > 0 && (
+              <Text color="orange.500" fontWeight="medium" fontSize="sm">
+                Microphone still active - click Stop again
+              </Text>
+            )}
+            <DetectedLanguageBadge />
+          </VStack>
 
-        {/* Language Selector */}
-        <LanguageSelectorComponent />
+          {/* Right Side: Settings */}
+          <Box flex="1" maxW="400px">
+            <LanguageSelectorComponent />
+          </Box>
+        </HStack>
 
-        {/* Translation Display */}
-        <Box
-          bg={translationBgColor}
-          p={6}
-          borderRadius="xl"
-          border="1px solid"
-          borderColor={borderColor}
-          textAlign="center"
-        >
-          <Text fontSize="lg" color={textColor} mb={2}>
-            Translation
-          </Text>
-          
-          {translation && detectedLanguage && detectedLanguage === languagePreferences.targetLanguage ? (
-            <VStack spacing={3}>
-              <Text fontSize="6xl" mb={2}>✅</Text>
-              <Text fontSize="lg" color="green.600" fontWeight="medium">
-                No translation needed
-              </Text>
-              <Text fontSize="md" color={textColor}>
-                Your text is already in {getLanguageName(languagePreferences.targetLanguage)}
-              </Text>
-              <Text fontSize="sm" color="gray.500" bg="gray.50" p={3} borderRadius="md" w="full">
-                "{translation}"
-              </Text>
-            </VStack>
-          ) : (
-            <>
-              <Text fontSize="2xl" fontWeight="bold" color="brand.600" mb={2}>
-                {translation || '…'}
-              </Text>
-              {translation && enablePunctuation && (
-                <Text fontSize="xs" color="gray.500" mb={2}>
-                  ✨ Punctuation automatically added
-                </Text>
-              )}
-              <Button
-                size="md"
-                colorScheme="blue"
-                leftIcon={<span>🔊</span>}
-                onClick={() => handleSpeakTranslation(translation)}
-                isDisabled={!translation}
-                mt={2}
-              >
-                Listen
-              </Button>
-            </>
-          )}
-        </Box>
+        {/* Bottom Row: Current Speaking Text (Left) and Translation (Right) */}
+        <HStack spacing={6} align="stretch">
+          {/* Left Side: Current Speaking Text */}
+          <Box flex="1">
+            <CurrentSpeakingText />
+          </Box>
+
+          {/* Right Side: Translation */}
+          <Box flex="1">
+            <TranslationDisplay />
+          </Box>
+        </HStack>
 
         {/* Transcript Panel (collapsible on mobile) */}
         <Box>
           <HStack justify="space-between" align="center" mb={2}>
             <Text fontSize="md" fontWeight="semibold" color={textColor}>
-              Transcript
+              Transcript History
             </Text>
             {isMobile && (
               <IconButton
@@ -487,7 +665,7 @@ const LinguaLivePage: React.FC = () => {
                       <Text fontSize="sm" fontWeight="medium">
                         {entry.originalText}
                       </Text>
-                      <Text fontSize="sm" color="brand.600">
+                      <Text fontSize="sm" color="blue.600">
                         {entry.translatedText}
                       </Text>
                     </Box>

@@ -33,20 +33,114 @@ const queryClient = new QueryClient({
   },
 });
 
-// Extend Chakra UI theme
+// Futuristic theme with neon colors and glassmorphism
 const theme = extendTheme({
+  config: {
+    initialColorMode: 'dark',
+    useSystemColorMode: false,
+  },
   colors: {
     brand: {
-      50: '#eff6ff',
-      100: '#dbeafe',
-      500: '#3b82f6',
-      600: '#2563eb',
-      700: '#1d4ed8',
+      50: '#e6f7ff',
+      100: '#b3e0ff',
+      200: '#80c9ff',
+      300: '#4db2ff',
+      400: '#1a9bff',
+      500: '#00E0FF', // Electric Blue
+      600: '#00b3cc',
+      700: '#008699',
+      800: '#005966',
+      900: '#002c33',
+    },
+    accent: {
+      50: '#ffe6f7',
+      100: '#ffb3e0',
+      200: '#ff80c9',
+      300: '#ff4db2',
+      400: '#ff1a9b',
+      500: '#FF00C8', // Neon Pink
+      600: '#cc00a0',
+      700: '#990078',
+      800: '#660050',
+      900: '#330028',
+    },
+    dark: {
+      50: '#f7f7f8',
+      100: '#eeeef0',
+      200: '#d1d1d6',
+      300: '#b0b0b8',
+      400: '#8e8e9a',
+      500: '#6c6c7c',
+      600: '#565664',
+      700: '#40404c',
+      800: '#2a2a34',
+      900: '#0f0f1c', // Very dark background
     },
   },
   fonts: {
-    heading: 'Inter, system-ui, sans-serif',
-    body: 'Inter, system-ui, sans-serif',
+    heading: '"Orbitron", "Space Grotesk", system-ui, sans-serif',
+    body: '"Poppins", "Inter", system-ui, sans-serif',
+  },
+  styles: {
+    global: {
+      body: {
+        bg: 'linear-gradient(135deg, #0f0f1c 0%, #1c1c3a 100%)',
+        color: 'white',
+        fontFamily: 'body',
+      },
+    },
+  },
+  components: {
+    Button: {
+      baseStyle: {
+        fontWeight: 'semibold',
+        borderRadius: 'lg',
+        _focus: {
+          boxShadow: '0 0 0 3px rgba(0, 224, 255, 0.3)',
+        },
+      },
+      variants: {
+        solid: {
+          bg: 'linear-gradient(135deg, #00E0FF 0%, #FF00C8 100%)',
+          color: 'white',
+          _hover: {
+            bg: 'linear-gradient(135deg, #00b3cc 0%, #cc00a0 100%)',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(0, 224, 255, 0.4)',
+          },
+          _active: {
+            transform: 'translateY(0)',
+          },
+        },
+        outline: {
+          border: '2px solid',
+          borderColor: 'brand.500',
+          color: 'brand.500',
+          _hover: {
+            bg: 'rgba(0, 224, 255, 0.1)',
+            borderColor: 'brand.400',
+            color: 'brand.400',
+            boxShadow: '0 0 20px rgba(0, 224, 255, 0.3)',
+          },
+        },
+        ghost: {
+          color: 'white',
+          _hover: {
+            bg: 'rgba(255, 255, 255, 0.1)',
+            color: 'brand.400',
+          },
+        },
+      },
+    },
+    Card: {
+      baseStyle: {
+        bg: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: 'xl',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+      },
+    },
   },
 });
 

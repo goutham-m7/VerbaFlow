@@ -22,7 +22,7 @@ import {
 } from '../types';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://verbaflow-backend.azurewebsites.net';
 
 class ApiService {
   private api: AxiosInstance;

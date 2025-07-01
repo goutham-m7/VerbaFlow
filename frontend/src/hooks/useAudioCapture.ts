@@ -19,6 +19,36 @@ interface AudioCaptureActions {
   forceCleanup: () => void;
 }
 
+// Helper function to get supported MIME types
+const getSupportedMimeType = (): string | null => {
+  const types = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+    'audio/wav',
+    'audio/aac',
+    'audio/mpeg'
+  ];
+
+  for (const type of types) {
+    if (MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return null;
+};
+
+// Helper function to check if we're on a mobile device
+const isMobileDevice = (): boolean => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+// Helper function to check if we're on HTTPS
+const isSecureContext = (): boolean => {
+  return window.isSecureContext || window.location.protocol === 'https:';
+};
+
 export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
   const [isSupported, setIsSupported] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -43,22 +73,53 @@ export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
       const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
       const hasMediaRecorder = !!window.MediaRecorder;
       const hasAudioContext = !!window.AudioContext;
+      const hasSpeechRecognition = !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition);
+      const isMobile = isMobileDevice();
+      const isSecure = isSecureContext();
       
-      setIsSupported(hasGetUserMedia && hasMediaRecorder && hasAudioContext);
+      // Check for supported MIME types
+      const supportedMimeType = getSupportedMimeType();
       
-      if (!hasGetUserMedia) {
-        setError('Microphone access is not supported in this browser');
-      } else if (!hasMediaRecorder) {
-        setError('Audio recording is not supported in this browser');
-      } else if (!hasAudioContext) {
-        setError('Audio processing is not supported in this browser');
+      let supportStatus = hasGetUserMedia && hasMediaRecorder && hasAudioContext;
+      
+      // Mobile-specific checks
+      if (isMobile) {
+        if (!isSecure) {
+          setError('Microphone access requires HTTPS on mobile devices. Please use a secure connection.');
+          supportStatus = false;
+        } else if (!supportedMimeType) {
+          setError('No supported audio format found for your mobile browser. Please try a different browser.');
+          supportStatus = false;
+        } else if (!hasSpeechRecognition) {
+          setError('Speech recognition is not supported in your mobile browser. Please use Chrome, Safari, or Firefox.');
+          supportStatus = false;
+        }
+      } else {
+        // Desktop checks
+        if (!hasGetUserMedia) {
+          setError('Microphone access is not supported in this browser');
+        } else if (!hasMediaRecorder) {
+          setError('Audio recording is not supported in this browser');
+        } else if (!hasAudioContext) {
+          setError('Audio processing is not supported in this browser');
+        } else if (!supportedMimeType) {
+          setError('No supported audio format found for your browser');
+        }
+      }
+      
+      setIsSupported(supportStatus);
+      
+      if (supportStatus) {
+        console.log('Audio capture supported with MIME type:', supportedMimeType);
+        console.log('Device type:', isMobile ? 'Mobile' : 'Desktop');
+        console.log('Secure context:', isSecure);
       }
     };
 
     checkSupport();
   }, []);
 
-  // Initialize Web Speech API
+  // Initialize Web Speech API with mobile considerations
   const initializeWebSpeechAPI = useCallback(() => {
     if (sttProvider === 'browser') {
       const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -67,6 +128,13 @@ export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'en-US'; // Default language
+
+        // Mobile-specific settings
+        if (isMobileDevice()) {
+          recognitionRef.current.maxAlternatives = 1;
+          // Some mobile browsers work better with shorter recognition sessions
+          recognitionRef.current.continuous = false;
+        }
 
         recognitionRef.current.onresult = (event: any) => {
           let interimTranscript = '';
@@ -96,7 +164,15 @@ export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
 
         recognitionRef.current.onend = () => {
           if (isRecording) {
-            recognitionRef.current?.start();
+            // For mobile, restart with a small delay
+            const delay = isMobileDevice() ? 100 : 0;
+            setTimeout(() => {
+              try {
+                recognitionRef.current?.start();
+              } catch (error) {
+                console.warn('Failed to restart speech recognition:', error);
+              }
+            }, delay);
           }
         };
       }
@@ -107,14 +183,20 @@ export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
   const updateAudioLevel = useCallback(() => {
     if (!analyserRef.current || !isRecording) return;
 
-    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-    analyserRef.current.getByteFrequencyData(dataArray);
+    try {
+      const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+      analyserRef.current.getByteFrequencyData(dataArray);
 
-    // Calculate average audio level
-    const average = dataArray.reduce((acc, value) => acc + value, 0) / dataArray.length;
-    const normalizedLevel = Math.min(average / 128, 1); // Normalize to 0-1
+      // Calculate average audio level
+      const average = dataArray.reduce((acc, value) => acc + value, 0) / dataArray.length;
+      const normalizedLevel = Math.min(average / 128, 1); // Normalize to 0-1
 
-    setAudioLevel(normalizedLevel);
+      setAudioLevel(normalizedLevel);
+    } catch (error) {
+      console.warn('Audio level monitoring failed:', error);
+      // Set a default level for mobile devices without AudioContext
+      setAudioLevel(0.5);
+    }
 
     if (isRecording) {
       animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
@@ -217,28 +299,49 @@ export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
       setTranscription('');
       audioChunksRef.current = [];
 
-      // Get microphone access
+      // Get microphone access with mobile-optimized constraints
+      const isMobile = isMobileDevice();
+      const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        // Mobile-specific optimizations
+        ...(isMobile && {
+          sampleRate: 16000, // Lower sample rate for mobile
+          channelCount: 1,   // Mono audio for mobile
+        })
+      };
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+        audio: audioConstraints,
       });
 
       streamRef.current = stream;
 
-      // Set up audio context for level monitoring
-      audioContextRef.current = new AudioContext();
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      analyserRef.current.fftSize = 256;
-      
-      microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream);
-      microphoneRef.current.connect(analyserRef.current);
+      // Set up audio context for level monitoring with mobile fallback
+      try {
+        audioContextRef.current = new AudioContext();
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+        
+        microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream);
+        microphoneRef.current.connect(analyserRef.current);
+      } catch (error) {
+        console.warn('AudioContext setup failed, continuing without audio level monitoring:', error);
+        // Continue without audio level monitoring on mobile devices that don't support it
+        audioContextRef.current = null;
+        analyserRef.current = null;
+        microphoneRef.current = null;
+      }
 
-      // Set up media recorder
+      // Set up media recorder with supported MIME type
+      const supportedMimeType = getSupportedMimeType();
+      if (!supportedMimeType) {
+        throw new Error('No supported audio format found for your browser');
+      }
+      
       mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
+        mimeType: supportedMimeType,
       });
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -370,7 +473,8 @@ export const useAudioCapture = (): AudioCaptureState & AudioCaptureActions => {
   const getAudioData = useCallback((): Blob | null => {
     if (audioChunksRef.current.length === 0) return null;
     
-    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+    const supportedMimeType = getSupportedMimeType();
+    const audioBlob = new Blob(audioChunksRef.current, { type: supportedMimeType || 'audio/webm' });
     return audioBlob;
   }, []);
 
