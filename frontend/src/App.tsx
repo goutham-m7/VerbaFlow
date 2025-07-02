@@ -16,6 +16,7 @@ import MeetingRoomPage from './pages/MeetingRoomPage';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import TranscriptHistoryPage from './pages/TranscriptHistoryPage';
+import DeepgramSTTPage from './pages/DeepgramSTTPage';
 
 // Hooks
 import { useAuthStore } from './store/authStore';
@@ -207,6 +208,7 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
+                <Route path="/deepgram-stt" element={<DeepgramSTTPage />} />
                 
                 {/* 404 route */}
                 <Route path="*" element={<Navigate to="/" replace />} />

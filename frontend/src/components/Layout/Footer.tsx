@@ -178,7 +178,7 @@ const Footer: React.FC = () => {
               >
                 <MotionText
                   fontWeight="bold"
-                  color="blue.400"
+                  color="#4299e1"
                   mb={4}
                   fontSize="lg"
                 >
@@ -196,7 +196,7 @@ const Footer: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       viewport={{ once: true }}
                       whileHover={{ 
-                        color: 'blue.400',
+                        color: '#4299e1',
                         x: 5,
                         opacity: 1
                       }}
@@ -217,7 +217,7 @@ const Footer: React.FC = () => {
               >
                 <MotionText
                   fontWeight="bold"
-                  color="blue.400"
+                  color="#4299e1"
                   mb={4}
                   fontSize="lg"
                 >
@@ -235,7 +235,7 @@ const Footer: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       viewport={{ once: true }}
                       whileHover={{ 
-                        color: 'blue.400',
+                        color: '#4299e1',
                         x: 5,
                         opacity: 1
                       }}
@@ -256,7 +256,7 @@ const Footer: React.FC = () => {
               >
                 <MotionText
                   fontWeight="bold"
-                  color="blue.400"
+                  color="#4299e1"
                   mb={4}
                   fontSize="lg"
                 >
@@ -274,7 +274,7 @@ const Footer: React.FC = () => {
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       viewport={{ once: true }}
                       whileHover={{ 
-                        color: 'blue.400',
+                        color: '#4299e1',
                         x: 5,
                         opacity: 1
                       }}

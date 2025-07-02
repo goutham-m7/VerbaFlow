@@ -121,6 +121,9 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               value={preferences.sourceLanguage}
               onChange={(e) => handleSourceLanguageChange(e.target.value)}
               size="sm"
+              bg="#e6f7ff"
+              color="#222"
+              _dark={{ bg: '#005966', color: '#fff' }}
             >
               {showAutoDetect && (
                 <option value="auto">
@@ -159,6 +162,9 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             value={preferences.targetLanguage}
             onChange={(e) => handleTargetLanguageChange(e.target.value)}
             size="sm"
+            bg="#b3e0ff"
+            color="#222"
+            _dark={{ bg: '#008699', color: '#fff' }}
           >
             {languages.map((language) => (
               <option key={language.code} value={language.code}>
@@ -175,14 +181,18 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           borderRadius="md"
         >
           <HStack justify="center" spacing={2}>
-            <Badge colorScheme="blue" variant="subtle">
-              {autoDetect ? 'Auto-detect' : getLanguageName(preferences.sourceLanguage)}
+            <Badge colorScheme="blue" variant="subtle" bg="#e6f7ff" color="#222" _dark={{ bg: '#005966', color: '#fff' }}>
+              <span style={{ color: '#222', fontWeight: 500 }}>
+                {autoDetect ? 'Auto-detect' : getLanguageName(preferences.sourceLanguage)}
+              </span>
             </Badge>
             <Text fontSize="sm" color={textColor}>
               →
             </Text>
-            <Badge colorScheme="green" variant="subtle">
-              {getLanguageName(preferences.targetLanguage)}
+            <Badge colorScheme="green" variant="subtle" bg="#b3e0ff" color="#222" _dark={{ bg: '#008699', color: '#fff' }}>
+              <span style={{ color: '#222', fontWeight: 500 }}>
+                {getLanguageName(preferences.targetLanguage)}
+              </span>
             </Badge>
           </HStack>
         </Box>

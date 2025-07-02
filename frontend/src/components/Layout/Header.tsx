@@ -53,6 +53,7 @@ const Header: React.FC = () => {
     { path: '/', label: 'Home' },
     { path: '/lingualive', label: 'LinguaLive' },
     { path: '/meet', label: 'LinguaLive Meet' },
+    { path: '/deepgram-stt', label: 'Deepgram STT' },
   ];
 
   return (
@@ -129,7 +130,7 @@ const Header: React.FC = () => {
                     fontSize="md"
                     position="relative"
                     whileHover={{ 
-                      color: 'blue.400',
+                      color: '#4299e1',
                       y: -2,
                       transition: { duration: 0.2 }
                     }}

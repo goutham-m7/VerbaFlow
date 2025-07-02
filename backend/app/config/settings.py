@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     hms_app_id: str = "your-100ms-app-id"
     hms_app_secret: str = "your-100ms-app-secret"
     
+    # Deepgram settings
+    deepgram_api_key: Optional[str] = None
+    
     # Sentry settings
     sentry_dsn: Optional[str] = None
     sentry_environment: str = "development"

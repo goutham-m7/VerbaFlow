@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from app.config.settings import settings
 from app.middleware.logging import LoggingMiddleware
 from app.services.websocket_manager import manager
-from app.api.v1 import auth, meetings, transcripts, translation, users
+from app.api.v1 import auth, meetings, transcripts, translation, users, deepgram
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -64,7 +64,9 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(meetings.router, prefix="/api/v1/meetings", tags=["Meetings"])
 app.include_router(transcripts.router, prefix="/api/v1/transcripts", tags=["Transcripts"])
 app.include_router(translation.router, prefix="/api/v1/translation", tags=["Translation"])
+app.include_router(deepgram.router, prefix="/api/v1/deepgram", tags=["Deepgram"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+# The /api/v1/deepgram/ws/live-transcribe websocket endpoint is now available for live STT
 
 @app.get("/")
 async def root():

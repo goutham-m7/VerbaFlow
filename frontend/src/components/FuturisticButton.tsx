@@ -107,35 +107,15 @@ const FuturisticButton: React.FC<FuturisticButtonProps> = ({
       {...props}
     >
       {leftIcon && (
-        <motion.div
-          style={{ display: 'inline-block', marginRight: '8px' }}
-          animate={{
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
+        <span style={{ display: 'inline-block', marginRight: '8px' }}>
           <IconWrapper icon={leftIcon} size={16} />
-        </motion.div>
+        </span>
       )}
       {children}
       {rightIcon && (
-        <motion.div
-          style={{ display: 'inline-block', marginLeft: '8px' }}
-          animate={{
-            x: [0, 5, 0],
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
+        <span style={{ display: 'inline-block', marginLeft: '8px' }}>
           <IconWrapper icon={rightIcon} size={16} />
-        </motion.div>
+        </span>
       )}
     </MotionButton>
   );
